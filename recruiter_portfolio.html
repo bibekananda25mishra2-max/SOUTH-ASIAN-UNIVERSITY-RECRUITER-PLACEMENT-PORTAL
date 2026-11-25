@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RECRUITER | SAU | PLACEMENT PORTAL</title>
+    <link rel="stylesheet" href="cssai.css">
+    <style>
+        /* ---------- Filter Dropdown Bar ---------- */
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin: 15px 20px;
+            padding: 14px 18px;
+            background: #f5f7fa;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            align-items: flex-end;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 220px;
+            position: relative;
+        }
+        .filter-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1f3a5f;
+            margin-bottom: 5px;
+        }
+        .filter-group select,
+        .filter-group input[type="text"] {
+            padding: 8px 10px;
+            border: 1px solid #b8c4d6;
+            border-radius: 4px;
+            background: #fff;
+            font-size: 14px;
+            color: #333;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .filter-group input:disabled,
+        .filter-group select:disabled {
+            background: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+        /* Custom dropdown autocomplete suggestions list */
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid #b8c4d6;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 180px;
+            overflow-y: auto;
+            z-index: 99;
+            display: none;
+        }
+        .autocomplete-list div {
+            padding: 8px 10px;
+            font-size: 13px;
+            cursor: pointer;
+            color: #333;
+        }
+        .autocomplete-list div:hover {
+            background: #eef2f8;
+            color: #1f3a5f;
+        }
+
+        .reset-btn {
+            padding: 8px 14px;
+            border: 1px solid #1f3a5f;
+            border-radius: 4px;
+            background: #fff;
+            color: #1f3a5f;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .reset-btn:hover {
+            background: #eef2f8;
+        }
+
+        /* ---------- Bulk Action Bar ---------- */
+        .bulk-action-bar {
+            margin: 0 20px 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #eef2f8;
+            padding: 10px 16px;
+            border: 1px solid #b8c4d6;
+            border-radius: 6px;
+        }
+        .bulk-action-bar span {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f3a5f;
+        }
+        .bulk-notify-btn {
+            padding: 8px 16px;
+            border: 0;
+            border-radius: 4px;
+            background: #1f3a5f;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .bulk-notify-btn:hover:not(:disabled) {
+            background: #2d5288;
+        }
+        .bulk-notify-btn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        /* ---------- Student table ---------- */
+        .table-wrap { margin: 20px; overflow-x: auto; }
+        .student-table { width: 100%; border-collapse: collapse; background: #fff; }
+        .student-table th,
+        .student-table td { padding: 10px 14px; border: 1px solid #ccc; text-align: left; vertical-align: middle; }
+        .student-table th { background: #1f3a5f; color: #fff; font-weight: 600; }
+        .student-table tbody tr:nth-child(even) { background: #f5f7fa; }
+        .grade-chip { display: inline-block; margin: 2px 4px 2px 0; padding: 2px 8px; border: 1px solid #b8c4d6; border-radius: 4px; background: #eef2f8; font-size: 13px; white-space: nowrap; }
+        
+        .notify-btn, .portfolio-btn { 
+            padding: 6px 12px; 
+            border: 0; 
+            border-radius: 4px; 
+            color: #fff; 
+            cursor: pointer; 
+            white-space: nowrap; 
+            font-size: 13px;
+        }
+        .notify-btn { background: #1f3a5f; }
+        .notify-btn:hover, .notify-btn:focus-visible { background: #2d5288; }
+        
+        .portfolio-btn { background: #0f6e56; }
+        .portfolio-btn:hover, .portfolio-btn:focus-visible { background: #148f70; }
+
+        /* ---------- Modals (Shared Overlay & Base) ---------- */
+        .modal-overlay { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            z-index: 1000; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 16px; 
+            background: rgba(0, 0, 0, 0.55); 
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box { 
+            position: relative; 
+            width: 100%; 
+            max-width: 480px; 
+            max-height: 90vh; 
+            overflow-y: auto; 
+            padding: 24px; 
+            border-radius: 8px; 
+            background: #fff; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .modal-close { 
+            position: absolute; 
+            top: 10px; 
+            right: 14px; 
+            border: 0; 
+            background: none; 
+            font-size: 26px; 
+            line-height: 1; 
+            cursor: pointer; 
+            color: #555;
+        }
+        .modal-close:hover { color: #000; }
+        .modal-box label { display: block; margin-top: 10px; }
+        .modal-box input,
+        .modal-box textarea { width: 100%; box-sizing: border-box; padding: 8px; }
+        .modal-box button[type="submit"] { margin-top: 14px; }
+
+        /* ---------- Portfolio Modal Specific Styles ---------- */
+        .portfolio-modal-box {
+            max-width: 780px;
+        }
+        .portfolio-header {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #eef2f8;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+        .portfolio-avatar {
+            width: 86px;
+            height: 86px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #1f3a5f;
+            background: #eef2f8;
+            flex-shrink: 0;
+        }
+        .portfolio-header-info {
+            flex: 1;
+            min-width: 220px;
+        }
+        .portfolio-header-info h2 {
+            margin: 0 0 6px 0;
+            color: #1f3a5f;
+            font-size: 22px;
+        }
+        .portfolio-header-info p {
+            margin: 3px 0;
+            color: #444;
+            font-size: 14px;
+        }
+
+        /* Profile Social Action Buttons */
+        .profile-links {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 5px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            color: #fff;
+            transition: opacity 0.2s ease, transform 0.1s ease;
+        }
+        .social-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .github-btn {
+            background-color: #24292e;
+        }
+        .linkedin-btn {
+            background-color: #0a66c2;
+        }
+
+        .portfolio-section {
+            margin-bottom: 22px;
+        }
+        .portfolio-section h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            color: #1f3a5f;
+            border-left: 4px solid #1f3a5f;
+            padding-left: 8px;
+        }
+
+        /* Languages / Skills Chips */
+        .skills-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .skill-chip {
+            background: #eef2f8;
+            color: #1f3a5f;
+            border: 1px solid #b8c4d6;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* Projects Grid & Demo Button */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+            gap: 12px;
+        }
+        .project-card {
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            padding: 12px 14px;
+            background: #fafbfc;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .project-card h4 {
+            margin: 0 0 5px 0;
+            font-size: 14.5px;
+            color: #1f3a5f;
+        }
+        .project-card p {
+            margin: 0;
+            font-size: 13px;
+            color: #444;
+            line-height: 1.45;
+        }
+        .demo-btn {
+            align-self: flex-start;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            background: #0f6e56;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 12.5px;
+            font-weight: 600;
+        }
+        .demo-btn:hover {
+            background: #148f70;
+        }
+
+        .portfolio-list {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+            color: #333;
+        }
+        .portfolio-list li {
+            margin-bottom: 6px;
+        }
+        .standing-badge {
+            display: inline-block;
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+            padding: 1px 7px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 6px;
+        }
+        .sem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 12px;
+        }
+        .sem-card {
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            padding: 12px;
+            background: #fafbfc;
+        }
+        .sem-card h4 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            color: #1f3a5f;
+            border-bottom: 1px solid #e1e4e8;
+            padding-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .sgpa-pill {
+            font-size: 12px;
+            background: #eef2f8;
+            color: #1f3a5f;
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+        .subject-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 8px;
+            margin-bottom: 4px;
+            border-radius: 4px;
+            font-size: 13px;
+            background: #fff;
+            border: 1px solid #eaecef;
+        }
+        /* Highlighting strong subjects (>= 9.0 / 10) */
+        .subject-row.strong-subject {
+            background: #e6f4ea;
+            border-color: #34a853;
+            color: #137333;
+            font-weight: 600;
+        }
+        .strong-tag {
+            font-size: 11px;
+            background: #137333;
+            color: #fff;
+            padding: 1px 5px;
+            border-radius: 3px;
+            margin-left: 6px;
+        }
+        .legend-note {
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .legend-box {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #e6f4ea;
+            border: 1px solid #34a853;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="banner">
+        <img src="C:/COLLAGE FILES/web design/semester project/sau placement portal/images/sauicon.jpg" width="80px" height="80px">
+        <span style="display: inline-block; width: 35px; text-align: center;"></span>
+        <span>PLACEMENT PORTAL | SOUTH ASIAN UNIVERSITY</span>
+    </div>
+    <div class="banner2">
+        <span style="display: inline-block; width: 75px;"></span>
+        <span style="font-size: 14px;"><button class="bannerbutton">HOME</button></span>
+        <span style="display: inline-block; width: 5px;"></span>
+        <span style="font-size: 14px;"><button class="bannerbutton">ABOUT</button></span>
+        <span style="display: inline-block; width: 5px;"></span>
+        <span style="font-size: 14px;"><button class="bannerbutton">ALUMINI</button></span>
+    </div>
+
+    <div class="nonflex-heading1" style="text-align: left;">
+        <h1> COMPANY DETAILS </h1>
+    </div>
+
+    <!-- ================= STUDENT SECTION ================= -->
+    <div class="nonflex-heading1" style="text-align: left;">
+        <h2>Students</h2>
+    </div>
+
+    <!-- Filter Dropdowns Bar -->
+    <div class="filter-bar">
+        <div class="filter-group">
+            <label for="programmeFilter">1. Select Programme:</label>
+            <select id="programmeFilter">
+                <option value="">All Programmes</option>
+                <option value="btech">B.Tech</option>
+                <option value="bs-ms">BS-MS</option>
+                <option value="btech-mtech">B.Tech - M.Tech</option>
+                <option value="llb">LLB</option>
+                <option value="llm">LLM</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="branchFilter">2. Select Branch:</label>
+            <select id="branchFilter" disabled>
+                <option value="">Select Programme First</option>
+            </select>
+        </div>
+
+        <!-- Required Subject 1 (Autocomplete & Hover List) -->
+        <div class="filter-group" id="sub1Group">
+            <label for="subject1Input">3. Required Subject 1:</label>
+            <input type="text" id="subject1Input" placeholder="Type or hover to view subjects..." autocomplete="off">
+            <div id="subject1List" class="autocomplete-list"></div>
+        </div>
+
+        <!-- Required Subject 2 (Optional, enabled after Subject 1) -->
+        <div class="filter-group" id="sub2Group">
+            <label for="subject2Input">4. Required Subject 2 (Optional):</label>
+            <input type="text" id="subject2Input" placeholder="Select Subject 1 first..." disabled autocomplete="off">
+            <div id="subject2List" class="autocomplete-list"></div>
+        </div>
+
+        <button type="button" class="reset-btn" id="resetFilters">Reset Filters</button>
+    </div>
+
+    <!-- Bulk Action Bar -->
+    <div class="bulk-action-bar">
+        <span id="selectedCountText">0 students selected</span>
+        <button type="button" id="bulkNotifyBtn" class="bulk-notify-btn" disabled>Send Bulk Notification</button>
+    </div>
+
+    <!-- ================= STUDENT TABLE ================= -->
+    <div class="table-wrap">
+        <table class="student-table">
+            <thead>
+                <tr>
+                    <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllCheckbox" aria-label="Select All Students"></th>
+                    <th>Student Name</th>
+                    <th>Programme & Branch</th>
+                    <th>Current Semester</th>
+                    <th>Grades of Past Semesters (SGPA)</th>
+                    <th>View Portfolio</th>
+                    <th>Notification</th>
+                </tr>
+            </thead>
+            <tbody id="studentTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- ================= PORTFOLIO MODAL ================= -->
+    <div class="modal-overlay" id="portfolioModal" role="dialog" aria-modal="true" aria-labelledby="portfolioName">
+        <div class="modal-box portfolio-modal-box">
+            <button type="button" class="modal-close" id="closePortfolioModal" aria-label="Close">&times;</button>
+
+            <div class="portfolio-header">
+                <img id="portfolioPic" class="portfolio-avatar" src="" alt="Student Profile Picture">
+                <div class="portfolio-header-info">
+                    <h2 id="portfolioName">Student Name</h2>
+                    <p id="portfolioProgBranch">Programme & Branch</p>
+                    <p id="portfolioSemester">Current Semester</p>
+                    <div class="profile-links">
+                        <a id="portfolioGithub" class="social-btn github-btn" href="#" target="_blank" rel="noopener noreferrer">
+                            <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                            GitHub Profile
+                        </a>
+                        <a id="portfolioLinkedin" class="social-btn linkedin-btn" href="#" target="_blank" rel="noopener noreferrer">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
+                            LinkedIn Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="portfolio-section">
+                <h3>Languages & Technical Skills Learned</h3>
+                <div class="skills-wrap" id="portfolioLanguages"></div>
+            </div>
+
+            <div class="portfolio-section">
+                <h3>Past Projects & Live Demos</h3>
+                <div class="projects-grid" id="portfolioProjects"></div>
+            </div>
+
+            <div class="portfolio-section">
+                <h3>Workshops Attended</h3>
+                <ul class="portfolio-list" id="portfolioWorkshops"></ul>
+            </div>
+
+            <div class="portfolio-section">
+                <h3>Hackathons & Standings</h3>
+                <ul class="portfolio-list" id="portfolioHackathons"></ul>
+            </div>
+
+            <div class="portfolio-section">
+                <h3>All Semesters Subject Grades (Out of 10)</h3>
+                <div class="legend-note">
+                    <span class="legend-box"></span>
+                    <span>Highlighted subjects indicate strong performance (Grade &ge; 9.0 / 10)</span>
+                </div>
+                <div class="sem-grid" id="portfolioGrades"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= NOTIFICATION MODAL ================= -->
+    <div class="modal-overlay" id="notifyModal" role="dialog" aria-modal="true" aria-labelledby="notifyTitle">
+        <div class="modal-box">
+            <button type="button" class="modal-close" id="closeModal" aria-label="Close">&times;</button>
+
+            <form id="emailForm">
+                <h2 id="notifyTitle">Send Email Notification</h2>
+
+                <label for="senderEmail">Sender Email (From):</label>
+                <input type="email" id="senderEmail" required placeholder="sender@example.com">
+
+                <label for="receiverEmail">Receiver Email (To):</label>
+                <input type="text" id="receiverEmail" required placeholder="recipient@example.com">
+
+                <label for="subject">Subject:</label>
+                <input type="text" id="subject" required placeholder="Important Update">
+
+                <label for="message">Message:</label>
+                <textarea id="message" rows="4" required placeholder="Type your message here..."></textarea>
+
+                <button type="submit" class="notify-btn">Send Notification</button>
+                <p id="status"></p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        /* ---------- Branch Mapping by Programme ---------- */
+        const branchesByProgramme = {
+            "btech": [
+                { value: "ai-ml", label: "AI-ML" },
+                { value: "core", label: "Core" },
+                { value: "mnc", label: "MnC" }
+            ],
+            "bs-ms": [
+                { value: "general", label: "General Sciences" }
+            ],
+            "btech-mtech": [
+                { value: "cse", label: "Computer Science & Engineering" }
+            ],
+            "llb": [
+                { value: "law", label: "General Law" }
+            ],
+            "llm": [
+                { value: "international-law", label: "International Law" }
+            ]
+        };
+
+        /* ---------- 10 Dummy Students Data ---------- */
+        const students = [
+            {
+                name: "Aarav Sharma",
+                email: "aarav.sharma@example.com",
+                photo: "https://ui-avatars.com/api/?name=Aarav+Sharma&background=1f3a5f&color=fff&size=128",
+                github: "https://github.com/aarav-sharma-dev",
+                linkedin: "https://www.linkedin.com/in/aarav-sharma-ai",
+                programme: "btech",
+                programmeLabel: "B.Tech in Computer Science (AI-ML)",
+                branch: "ai-ml",
+                currentSemester: 7,
+                grades: [8.4, 8.1, 8.6, 8.9, 8.7, 9.0],
+                languages: ["Python", "C++", "JavaScript", "SQL", "PyTorch", "TensorFlow"],
+                projects: [
+                    {
+                        title: "AgroVision Crop Disease Detector",
+                        description: "CNN-based mobile web app identifying leaf diseases in real time with 96% accuracy.",
+                        demoUrl: "https://agrovision-demo.example.com"
+                    },
+                    {
+                        title: "SAU Smart Campus Chatbot",
+                        description: "RAG-powered NLP assistant answering university admission and syllabus queries.",
+                        demoUrl: "https://sau-bot-demo.example.com"
+                    }
+                ],
+                workshops: ["Deep Learning & Neural Networks Bootcamp", "Cloud Deployment with AWS"],
+                hackathons: [
+                    { name: "Smart India Hackathon 2025", standing: "1st Runner-Up (National)" },
+                    { name: "SAU Annual CodeFest", standing: "Winner (1st Place)" }
+                ],
+                semesterSubjects: [
+                    { semester: 1, sgpa: 8.4, subjects: [{ name: "Engineering Math I", grade: 8.5 }, { name: "Programming in C", grade: 9.2 }, { name: "Basic Electronics", grade: 7.8 }] },
+                    { semester: 2, sgpa: 8.1, subjects: [{ name: "Engineering Math II", grade: 8.0 }, { name: "Data Structures", grade: 8.8 }, { name: "Digital Logic Design", grade: 7.6 }] },
+                    { semester: 3, sgpa: 8.6, subjects: [{ name: "Object-Oriented Programming", grade: 9.0 }, { name: "Discrete Mathematics", grade: 8.4 }, { name: "Computer Organization", grade: 8.4 }] },
+                    { semester: 4, sgpa: 8.9, subjects: [{ name: "Design & Analysis of Algorithms", grade: 9.1 }, { name: "Database Management Systems", grade: 9.0 }, { name: "Operating Systems", grade: 8.6 }] },
+                    { semester: 5, sgpa: 8.7, subjects: [{ name: "Machine Learning", grade: 9.3 }, { name: "Computer Networks", grade: 8.4 }, { name: "Artificial Intelligence", grade: 8.5 }] },
+                    { semester: 6, sgpa: 9.0, subjects: [{ name: "Deep Learning", grade: 9.4 }, { name: "Natural Language Processing", grade: 9.1 }, { name: "Software Engineering", grade: 8.5 }] }
+                ]
+            },
+            {
+                name: "Meera Nair",
+                email: "meera.nair@example.com",
+                photo: "https://ui-avatars.com/api/?name=Meera+Nair&background=0f6e56&color=fff&size=128",
+                github: "https://github.com/meeranair-codes",
+                linkedin: "https://www.linkedin.com/in/meera-nair-cse",
+                programme: "btech",
+                programmeLabel: "B.Tech in Computer Science (Core)",
+                branch: "core",
+                currentSemester: 5,
+                grades: [7.8, 8.0, 8.3, 8.1],
+                languages: ["Java", "JavaScript", "TypeScript", "React", "Node.js", "HTML/CSS"],
+                projects: [
+                    {
+                        title: "PeerCode Collaborative IDE",
+                        description: "Real-time browser code editor with WebSocket synchronization and live execution.",
+                        demoUrl: "https://peercode-live.example.com"
+                    },
+                    {
+                        title: "SecureVault Password Manager",
+                        description: "Zero-knowledge encrypted credential manager built with Web Crypto API.",
+                        demoUrl: "https://securevault-app.example.com"
+                    }
+                ],
+                workshops: ["Full-Stack Web Dev", "Cybersecurity Seminar"],
+                hackathons: [{ name: "HackDelhi 2025", standing: "Top 10 Finalist" }],
+                semesterSubjects: [
+                    { semester: 1, sgpa: 7.8, subjects: [{ name: "Calculus & Linear Algebra", grade: 7.5 }, { name: "Programming Fundamentals", grade: 8.4 }, { name: "Engineering Physics", grade: 7.5 }] },
+                    { semester: 2, sgpa: 8.0, subjects: [{ name: "Data Structures & C++", grade: 8.5 }, { name: "Discrete Structures", grade: 7.8 }, { name: "Environmental Studies", grade: 7.7 }] },
+                    { semester: 3, sgpa: 8.3, subjects: [{ name: "Object-Oriented Programming", grade: 9.1 }, { name: "Operating Systems", grade: 8.0 }, { name: "Computer Organization", grade: 7.8 }] },
+                    { semester: 4, sgpa: 8.1, subjects: [{ name: "Algorithms", grade: 9.0 }, { name: "Web Technologies", grade: 8.4 }, { name: "Theory of Computation", grade: 7.2 }] }
+                ]
+            },
+            {
+                name: "Rohan Verma",
+                email: "rohan.verma@example.com",
+                photo: "https://ui-avatars.com/api/?name=Rohan+Verma&background=4a5568&color=fff&size=128",
+                github: "https://github.com/rohanverma-quant",
+                linkedin: "https://www.linkedin.com/in/rohan-verma-mnc",
+                programme: "btech",
+                programmeLabel: "B.Tech in Mathematics & Computing (MnC)",
+                branch: "mnc",
+                currentSemester: 3,
+                grades: [7.2, 7.6],
+                languages: ["Python", "R", "C", "MATLAB", "SQL"],
+                projects: [
+                    {
+                        title: "Monte Carlo Option Pricer",
+                        description: "Interactive financial derivatives simulator modeling Black-Scholes & stochastic volatility.",
+                        demoUrl: "https://mc-pricer.example.com"
+                    },
+                    {
+                        title: "Delhi Metro Graph Optimizer",
+                        description: "Shortest-path and congestion-aware route visualizer using Dijkstra & A* algorithms.",
+                        demoUrl: "https://metro-opt.example.com"
+                    }
+                ],
+                workshops: ["Quantitative Finance & Python"],
+                hackathons: [{ name: "DataQuest Analytics Hackathon", standing: "3rd Place" }],
+                semesterSubjects: [
+                    { semester: 1, sgpa: 7.2, subjects: [{ name: "Linear Algebra", grade: 9.0 }, { name: "Calculus", grade: 7.0 }, { name: "Python Programming", grade: 7.6 }] },
+                    { semester: 2, sgpa: 7.6, subjects: [{ name: "Probability & Statistics", grade: 9.2 }, { name: "Data Structures", grade: 7.4 }, { name: "Differential Equations", grade: 6.8 }] }
+                ]
+            },
+            {
+                name: "Sana Rahman",
+                email: "sana.rahman@example.com",
+                photo: "https://ui-avatars.com/api/?name=Sana+Rahman&background=744210&color=fff&size=128",
+                github: "https://github.com/sanarahman-legaltech",
+                linkedin: "https://www.linkedin.com/in/sana-rahman-llm",
+                programme: "llm",
+                programmeLabel: "Master of Laws (LLM) - International Law",
+                branch: "international-law",
+                currentSemester: 2,
+                grades: [9.1],
+                languages: ["Legal Drafting", "Python (NLP)", "LexisNexis", "Westlaw", "LaTeX"],
+                projects: [
+                    {
+                        title: "TreatyClause Comparative Tracker",
+                        description: "Searchable database comparing South Asian bilateral investment arbitration clauses.",
+                        demoUrl: "https://treatyclause-db.example.com"
+                    }
+                ],
+                workshops: ["Cross-Border Arbitration Workshop", "Human Rights Law Colloquium"],
+                hackathons: [{ name: "LegalTech Policy Hackathon", standing: "Best Policy Brief Award" }],
+                semesterSubjects: [
+                    { semester: 1, sgpa: 9.1, subjects: [{ name: "Public International Law", grade: 9.4 }, { name: "International Trade Law", grade: 9.0 }, { name: "Comparative Constitutional Law", grade: 8.9 }] }
+                ]
+            },
+            {
+                name: "Kabir Das",
+                email: "kabir.das@example.com",
+                photo: "https://ui-avatars.com/api/?name=Kabir+Das&background=2b6cb0&color=fff&size=128",
+                github: "https://github.com/kabirdas-bio",
+                linkedin: "https://www.linkedin.com/in/kabir-das-science",
+                programme: "bs-ms",
+                programmeLabel: "Integrated BS-MS (General Sciences)",
+                branch: "general",
+                currentSemester: 6,
+                grades: [8.0, 8.2, 8.1, 8.4, 8.5],
+                languages: ["Python", "R", "Bash", "Julia", "Biopython"],
+                projects: [
+                    {
+                        title: "ProteinFold 3D Visualizer",
+                        description: "Browser-based PDB molecular viewer analyzing amino acid sequence alignments.",
+                        demoUrl: "https://proteinfold-view.example.com"
+                    },
+                    {
+                        title: "Climate Anomaly Dashboard",
+                        description: "Time-series statistical dashboard tracking Himalayan glacial melt datasets.",
+                        demoUrl: "https://climate-stats.example.com"
+                    }
+                ],
+                workshops: ["Computational Biology & Genomics", "Scientific Data Visualization in R"],
+                hackathons: [{ name: "Bioinformatics Open Hack", standing: "2nd Runner-Up" }],
+                semesterSubjects: [
+                    { semester: 1, sgpa: 8.0, subjects: [{ name: "Cell Biology", grade: 8.2 }, { name: "General Chemistry I", grade: 7.9 }, { name: "Foundation Mathematics", grade: 7.9 }] },
+                    { semester: 2, sgpa: 8.2, subjects: [{ name: "Genetics & Evolution", grade: 8.6 }, { name: "Organic Chemistry", grade: 8.0 }, { name: "Classical Mechanics", grade: 8.0 }] },
+                    { semester: 3, sgpa: 8.1, subjects: [{ name: "Molecular Biology", grade: 8.4 }, { name: "Biostatistics", grade: 8.3 }, { name: "Thermodynamics", grade: 7.6 }] },
+                    { semester: 4, sgpa: 8.4, subjects: [{ name: "Computational Genomics", grade: 9.0 }, { name: "Biochemistry", grade: 8.2 }, { name: "Electromagnetism", grade: 8.0 }] },
+                    { semester: 5, sgpa: 8.5, subjects: [{ name: "Bioinformatics", grade: 9.3 }, { name: "Quantum Chemistry", grade: 8.2 }, { name: "Research Methodology", grade: 8.0 }] }
+                ]
+            },
+            {
+                name: "Ananya Gupta",
+                email: "ananya.gupta@example.com",
+                photo: "https://ui-avatars.com/api/?name=Ananya+Gupta&background=975a16&color=fff&size=128",
+                github: "https://github.com/ananyagupta-cloud",
+                linkedin: "https://www.linkedin.com/in/ananya-gupta-systems",
+                programme: "btech-mtech",
+                programmeLabel: "B.Tech - M.Tech in Computer Science & Engineering",
+                branch: "cse",
+                currentSemester: 8,
+                grades: [8.8, 8.9, 9.0, 9.2, 9.1, 8.9, 9.4],
+                languages: ["Go", "Rust", "C++", "Python", "Docker", "Kubernetes"],
+                projects: [
+                    {
+                        title: "RaftKV Distributed Store",
+                        description: "Fault-tolerant key-value storage engine implementing Raft consensus in Go.",
+                        demoUrl: "https://raftkv-cluster.example.com"
+                    },
+                    {
+                        title: "KubePulse Autoscaler",
+                        description: "Predictive microservice load balancer using Prometheus telemetry metrics.",
+                        demoUrl: "https://kubepulse-demo.example.com"
+                    }
+                ],
+                workshops: ["Advanced Distributed Systems", "Kubernetes Masterclass"],
+                hackathons: [{ name: "Global Cloud Hack 2024", standing: "Winner (1st Place)" }],
+                semesterSubjects: [
+                    { semester: 1, sgpa: 8.8, subjects: [{ name: "Calculus I", grade: 8.7 }, { name: "Structured Programming", grade: 9.1 }, { name: "Digital Systems", grade: 8.6 }] },
+                    { semester: 2, sgpa: 8.9, subjects: [{ name: "Data Structures", grade: 9.2 }, { name: "Linear Algebra", grade: 8.8 }, { name: "Computer Architecture", grade: 8.7 }] },
+                    { semester: 3, sgpa: 9.0, subjects: [{ name: "Algorithms", grade: 9.3 }, { name: "Operating Systems", grade: 9.0 }, { name: "Probability Theory", grade: 8.7 }] },
+                    { semester: 4, sgpa: 9.2, subjects: [{ name: "Computer Networks", grade: 9.4 }, { name: "Database Internals", grade: 9.2 }, { name: "Compiler Design", grade: 9.0 }] },
+                    { semester: 5, sgpa: 9.1, subjects: [{ name: "Software Architecture", grade: 9.1 }, { name: "Information Security", grade: 9.2 }, { name: "Machine Learning", grade: 9.0 }] },
+                    { semester: 6, sgpa: 8.9, subjects: [{ name: "Parallel Computing", grade: 9.0 }, { name: "Big Data Systems", grade: 8.9 }, { name: "Network Security", grade: 8.8 }] },
+                    { semester: 7, sgpa: 9.4, subjects: [{ name: "Distributed Systems", grade: 9.5 }, { name: "Cloud Architecture", grade: 9.2 }, { name: "Advanced Cryptography", grade: 9.4 }] }
+                ]
+            },
+            {
+                name: "Aditya Kulkarni",
+                email: "aditya.kulkarni@example.com",
+                photo: "https://ui-avatars.com/api/?name=Aditya+Kulkarni&background=2c5282&color=fff&size=128",
+                github: "https://github.com/adityakulkarni-law",
+                linkedin: "https://www.linkedin.com/in/aditya-kulkarni-llb",
+                programme: "llb",
+                programmeLabel: "Bachelor of Laws (LLB) - General Law",
+                branch: "law",
+                currentSemester: 4,
+                grades: [7.9, 8.1, 8.3],
+                languages: ["Contract Analysis", "SCC Online", "Manupatra", "Legal Research"],
+                projects: [
+                    {
+                        title: "OpenContract Clause Checker",
+                        description: "Web tool highlighting indemnity and jurisdiction risks in standard NDA templates.",
+                        demoUrl: "https://opencontract-check.example.com"
+                    }
+                ],
+                workshops: ["Corporate Mooting & Contract Drafting"],
+                hackathons: [{ name: "National Cyber Law Moot", standing: "Semi-Finalist" }],
+                semesterSubjects: [
+                    { semester: 1, sgpa: 7.9, subjects: [{ name: "Law of Torts", grade: 8.0 }, { name: "Contract Law I", grade: 8.1 }, { name: "Constitutional Law I", grade: 7.6 }] },
+                    { semester: 2, sgpa: 8.1, subjects: [{ name: "Criminal Law (IPC)", grade: 8.3 }, { name: "Family Law", grade: 8.0 }, { name: "Constitutional Law II", grade: 8.0 }] },
+                    { semester: 3, sgpa: 8.3, subjects: [{ name: "Contract Law II", grade: 9.0 }, { name: "Jurisprudence", grade: 8.2 }, { name: "Property Law", grade: 7.8 }] }
+                ]
+            },
+            {
+                name: "Priya Patel",
+                email: "priya.patel@example.com",
+                photo: "https://ui-avatars.com/api/?name=Priya+Patel&background=b83280&color=fff&size=128",
+                github: "https://github.com/priyapatel-cv",
+                linkedin: "https://www.linkedin.com/in/priya-patel-aiml",
+                programme: "btech",
+                programmeLabel: "B.Tech in Computer Science (AI-ML)",
+                branch: "ai-ml",
+                currentSemester: 5,
+                grades: [8.5, 8.7, 9.0, 8.8],
+                languages: ["Python", "C++", "OpenCV", "PyTorch", "FastAPI", "React"],
+                projects: [
+                    {
+                        title: "SignBridge Real-Time Translator",
+                        description: "MediaPipe & LSTM gesture recognition web app translating Indian Sign Language to text.",
+                        demoUrl: "https://signbridge-live.example.com"
+                    },
+                    {
+                        title: "DocuScan Invoice Extractor",
+                        description: "OCR pipeline extracting structured JSON line items from scanned PDF receipts.",
+                        demoUrl: "https://docuscan-ocr.example.com"
+                    }
+                ],
+                workshops: ["Computer Vision with OpenCV", "PyTorch Specialization"],
+                hackathons: [{ name: "AI Innovation Challenge", standing: "Runner-Up" }],
+                semesterSubjects: [
+                    { semester: 1, sgpa: 8.5, subjects: [{ name: "Engineering Math I", grade: 8.6 }, { name: "Programming in C", grade: 8.8 }, { name: "Physics", grade: 8.1 }] },
+                    { semester: 2, sgpa: 8.7, subjects: [{ name: "Data Structures", grade: 9.0 }, { name: "Linear Algebra", grade: 8.8 }, { name: "Digital Electronics", grade: 8.3 }] },
+                    { semester: 3, sgpa: 9.0, subjects: [{ name: "Probability & Statistics", grade: 9.2 }, { name: "Object-Oriented Design", grade: 9.0 }, { name: "Operating Systems", grade: 8.8 }] },
+                    { semester: 4, sgpa: 8.8, subjects: [{ name: "Artificial Intelligence", grade: 9.6 }, { name: "Computer Networks", grade: 8.5 }, { name: "Database Systems", grade: 9.0 }] }
+                ]
+            },
+            {
+                name: "Vikram Malhotra",
+                email: "vikram.malhotra@example.com",
+                photo: "https://ui-avatars.com/api/?name=Vikram+Malhotra&background=234e52&color=fff&size=128",
+                github: "https://github.com/vikram-malhotra01",
+                linkedin: "https://www.linkedin.com/in/vikram-malhotra-sau",
+                programme: "btech",
+                programmeLabel: "B.Tech in Computer Science (Core)",
+                branch: "core",
+                currentSemester: 1,
+                grades: [],
+                languages: ["C", "Python", "HTML", "CSS", "Git"],
+                projects: [
+                    {
+                        title: "Terminal Task Tracker CLI",
+                        description: "Lightweight command-line productivity planner written in C with file persistence.",
+                        demoUrl: "https://cli-tracker-docs.example.com"
+                    }
+                ],
+                workshops: ["Intro to Git & Open Source"],
+                hackathons: [{ name: "Freshers CodeSprint", standing: "Top 5" }],
+                semesterSubjects: []
+            },
+            {
+                name: "Neha Iyer",
+                email: "neha.iyer@example.com",
+                photo: "https://ui-avatars.com/api/?name=Neha+Iyer&background=7b341e&color=fff&size=128",
+                github: "https://github.com/nehaiyer-data",
+                linkedin: "https://www.linkedin.com/in/neha-iyer-bsms",
+                programme: "bs-ms",
+                programmeLabel: "Integrated BS-MS (General Sciences)",
+                branch: "general",
+                currentSemester: 4,
+                grades: [8.2, 8.5, 8.6],
+                languages: ["Python", "R", "SQL", "Pandas", "Scikit-Learn", "D3.js"],
+                projects: [
+                    {
+                        title: "AirQuality Delhi Forecaster",
+                        description: "Spatio-temporal PM2.5 forecasting dashboard using CPCB sensor data.",
+                        demoUrl: "https://aqi-forecast-delhi.example.com"
+                    },
+                    {
+                        title: "SpectraLab Peak Analyzer",
+                        description: "Automated spectroscopy curve-fitting web utility for physical chemistry labs.",
+                        demoUrl: "https://spectralab-tool.example.com"
+                    }
+                ],
+                workshops: ["Applied Statistics with Python"],
+                hackathons: [{ name: "Data Science Hackfest", standing: "Winner" }],
+                semesterSubjects: [
+                    { semester: 1, sgpa: 8.2, subjects: [{ name: "Calculus & Analysis", grade: 8.4 }, { name: "Introductory Chemistry", grade: 8.1 }, { name: "General Physics I", grade: 8.1 }] },
+                    { semester: 2, sgpa: 8.5, subjects: [{ name: "Probability & Data Analysis", grade: 9.0 }, { name: "Organic Chemistry", grade: 8.3 }, { name: "Waves & Optics", grade: 8.2 }] },
+                    { semester: 3, sgpa: 8.6, subjects: [{ name: "Advanced Statistics", grade: 9.3 }, { name: "Linear Algebra for Sciences", grade: 9.0 }, { name: "Physical Chemistry", grade: 8.4 }] }
+                ]
+            }
+        ];
+
+        /* ---------- Extract All Unique Subjects Across All Students/Semesters ---------- */
+        const allSubjectsSet = new Set();
+        students.forEach(s => {
+            if (s.semesterSubjects) {
+                s.semesterSubjects.forEach(sem => {
+                    sem.subjects.forEach(sub => {
+                        allSubjectsSet.add(sub.name);
+                    });
+                });
+            }
+        });
+        const allSubjects = Array.from(allSubjectsSet).sort();
+
+        const tbody = document.getElementById('studentTableBody');
+        const programmeSelect = document.getElementById('programmeFilter');
+        const branchSelect = document.getElementById('branchFilter');
+        const subject1Input = document.getElementById('subject1Input');
+        const subject1List = document.getElementById('subject1List');
+        const subject2Input = document.getElementById('subject2Input');
+        const subject2List = document.getElementById('subject2List');
+        const resetBtn = document.getElementById('resetFilters');
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        const bulkNotifyBtn = document.getElementById('bulkNotifyBtn');
+        const selectedCountText = document.getElementById('selectedCountText');
+
+        let selectedSubject1 = '';
+        let selectedSubject2 = '';
+        const selectedStudentEmails = new Set();
+
+        const notifyModal = document.getElementById('notifyModal');
+        const portfolioModal = document.getElementById('portfolioModal');
+        const form = document.getElementById('emailForm');
+        const statusText = document.getElementById('status');
+
+        /* ---------- Update Branch options when Programme changes ---------- */
+        programmeSelect.addEventListener('change', function () {
+            const selectedProg = this.value;
+            branchSelect.innerHTML = '';
+
+            if (!selectedProg || !branchesByProgramme[selectedProg]) {
+                branchSelect.disabled = true;
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = 'Select Programme First';
+                branchSelect.appendChild(opt);
+            } else {
+                branchSelect.disabled = false;
+                const defaultOpt = document.createElement('option');
+                defaultOpt.value = '';
+                defaultOpt.textContent = 'All Branches';
+                branchSelect.appendChild(defaultOpt);
+
+                branchesByProgramme[selectedProg].forEach(function (b) {
+                    const opt = document.createElement('option');
+                    opt.value = b.value;
+                    opt.textContent = b.label;
+                    branchSelect.appendChild(opt);
+                });
+            }
+
+            renderTable();
+        });
+
+        branchSelect.addEventListener('change', renderTable);
+
+        /* ---------- Autocomplete & Hover Logic for Subject 1 & 2 ---------- */
+        function setupSubjectDropdown(inputEl, listEl, isSubject2 = false) {
+            function showList(filterText = '') {
+                listEl.innerHTML = '';
+                const query = filterText.toLowerCase();
+                
+                const filtered = allSubjects.filter(sub => {
+                    if (isSubject2 && sub === selectedSubject1) return false;
+                    return sub.toLowerCase().includes(query);
+                });
+
+                if (filtered.length === 0) {
+                    const div = document.createElement('div');
+                    div.textContent = 'No matching subjects found';
+                    div.style.color = '#777';
+                    listEl.appendChild(div);
+                } else {
+                    filtered.forEach(sub => {
+                        const div = document.createElement('div');
+                        div.textContent = sub;
+                        div.addEventListener('mousedown', function (e) {
+                            e.preventDefault();
+                            inputEl.value = sub;
+                            if (isSubject2) {
+                                selectedSubject2 = sub;
+                            } else {
+                                selectedSubject1 = sub;
+                                subject2Input.disabled = false;
+                                subject2Input.placeholder = 'Type or hover to view subjects...';
+                            }
+                            listEl.style.display = 'none';
+                            renderTable();
+                        });
+                        listEl.appendChild(div);
+                    });
+                }
+                listEl.style.display = 'block';
+            }
+
+            inputEl.addEventListener('focus', function () {
+                if (isSubject2 && subject2Input.disabled) return;
+                showList(inputEl.value);
+            });
+
+            inputEl.addEventListener('mouseenter', function () {
+                if (isSubject2 && subject2Input.disabled) return;
+                showList(inputEl.value);
+            });
+
+            inputEl.addEventListener('input', function () {
+                const val = inputEl.value;
+                if (isSubject2) {
+                    selectedSubject2 = val;
+                } else {
+                    selectedSubject1 = val;
+                    if (!val) {
+                        selectedSubject2 = '';
+                        subject2Input.value = '';
+                        subject2Input.disabled = true;
+                        subject2Input.placeholder = 'Select Subject 1 first...';
+                    }
+                }
+                showList(val);
+                renderTable();
+            });
+
+            inputEl.addEventListener('blur', function () {
+                setTimeout(() => { listEl.style.display = 'none'; }, 200);
+            });
+        }
+
+        setupSubjectDropdown(subject1Input, subject1List, false);
+        setupSubjectDropdown(subject2Input, subject2List, true);
+
+        resetBtn.addEventListener('click', function () {
+            programmeSelect.value = '';
+            selectedSubject1 = '';
+            selectedSubject2 = '';
+            subject1Input.value = '';
+            subject2Input.value = '';
+            subject2Input.disabled = true;
+            subject2Input.placeholder = 'Select Subject 1 first...';
+            selectedStudentEmails.clear();
+            selectAllCheckbox.checked = false;
+            programmeSelect.dispatchEvent(new Event('change'));
+        });
+
+        /* ---------- Helper: Get Grade for a Specific Subject ---------- */
+        function getSubjectGrade(student, subjectName) {
+            if (!subjectName || !student.semesterSubjects) return -1;
+            for (const semObj of student.semesterSubjects) {
+                for (const sub of semObj.subjects) {
+                    if (sub.name.toLowerCase() === subjectName.toLowerCase()) {
+                        return sub.grade;
+                    }
+                }
+            }
+            return -1;
+        }
+
+        /* ---------- Update Bulk Action UI State ---------- */
+        function updateBulkActionBar(currentFilteredStudents) {
+            const count = selectedStudentEmails.size;
+            selectedCountText.textContent = count + ' student' + (count === 1 ? '' : 's') + ' selected';
+            bulkNotifyBtn.disabled = count === 0;
+
+            if (currentFilteredStudents.length > 0) {
+                const allVisibleSelected = currentFilteredStudents.every(s => selectedStudentEmails.has(s.email));
+                selectAllCheckbox.checked = allVisibleSelected;
+            } else {
+                selectAllCheckbox.checked = false;
+            }
+        }
+
+        /* ---------- Build, Filter & Sort the Table ---------- */
+        function renderTable() {
+            const progFilter = programmeSelect.value;
+            const branchFilter = branchSelect.value;
+
+            const filteredStudents = students.filter(function (student) {
+                const matchProg = !progFilter || student.programme === progFilter;
+                const matchBranch = !branchFilter || student.branch === branchFilter;
+                return matchProg && matchBranch;
+            });
+
+            filteredStudents.sort(function (a, b) {
+                let gradeA1 = getSubjectGrade(a, selectedSubject1);
+                let gradeB1 = getSubjectGrade(b, selectedSubject1);
+
+                if (gradeA1 !== gradeB1) {
+                    return gradeB1 - gradeA1;
+                }
+
+                if (selectedSubject2) {
+                    let gradeA2 = getSubjectGrade(a, selectedSubject2);
+                    let gradeB2 = getSubjectGrade(b, selectedSubject2);
+                    if (gradeA2 !== gradeB2) {
+                        return gradeB2 - gradeA2;
+                    }
+                }
+
+                return 0;
+            });
+
+            tbody.innerHTML = '';
+
+            if (filteredStudents.length === 0) {
+                const emptyRow = document.createElement('tr');
+                const emptyCell = document.createElement('td');
+                emptyCell.colSpan = 7;
+                emptyCell.style.textAlign = 'center';
+                emptyCell.textContent = 'No students match the selected filters.';
+                emptyRow.appendChild(emptyCell);
+                tbody.appendChild(emptyRow);
+                updateBulkActionBar(filteredStudents);
+                return;
+            }
+
+            filteredStudents.forEach(function (student) {
+                const row = document.createElement('tr');
+
+                // Checkbox Cell
+                const selectCell = document.createElement('td');
+                selectCell.style.textAlign = 'center';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = selectedStudentEmails.has(student.email);
+                checkbox.addEventListener('change', function () {
+                    if (checkbox.checked) {
+                        selectedStudentEmails.add(student.email);
+                    } else {
+                        selectedStudentEmails.delete(student.email);
+                    }
+                    updateBulkActionBar(filteredStudents);
+                });
+                selectCell.appendChild(checkbox);
+
+                const nameCell = document.createElement('td');
+                nameCell.textContent = student.name;
+
+                const progCell = document.createElement('td');
+                progCell.textContent = student.programme.toUpperCase() + ' (' + student.branch.toUpperCase() + ')';
+
+                const semCell = document.createElement('td');
+                semCell.textContent = student.currentSemester;
+
+                const gradesCell = document.createElement('td');
+                if (student.grades.length === 0) {
+                    gradesCell.textContent = 'No past semesters';
+                } else {
+                    student.grades.forEach(function (grade, i) {
+                        const chip = document.createElement('span');
+                        chip.className = 'grade-chip';
+                        chip.textContent = 'Sem ' + (i + 1) + ': ' + grade.toFixed(1);
+                        gradesCell.appendChild(chip);
+                    });
+                }
+
+                const portfolioCell = document.createElement('td');
+                const portfolioBtn = document.createElement('button');
+                portfolioBtn.type = 'button';
+                portfolioBtn.className = 'portfolio-btn';
+                portfolioBtn.textContent = 'View Portfolio';
+                portfolioBtn.addEventListener('click', function () { openPortfolio(student); });
+                portfolioCell.appendChild(portfolioBtn);
+
+                const actionCell = document.createElement('td');
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'notify-btn';
+                button.textContent = 'Send Notification';
+                button.addEventListener('click', function () { openNotification(student); });
+                actionCell.appendChild(button);
+
+                row.append(selectCell, nameCell, progCell, semCell, gradesCell, portfolioCell, actionCell);
+                tbody.appendChild(row);
+            });
+
+            updateBulkActionBar(filteredStudents);
+
+            // Master Select All listener handler helper
+            selectAllCheckbox.onclick = function () {
+                filteredStudents.forEach(s => {
+                    if (selectAllCheckbox.checked) {
+                        selectedStudentEmails.add(s.email);
+                    } else {
+                        selectedStudentEmails.delete(s.email);
+                    }
+                });
+                renderTable();
+            };
+        }
+
+        // Initial table render
+        renderTable();
+
+        /* ---------- Bulk Notification Trigger ---------- */
+        bulkNotifyBtn.addEventListener('click', function () {
+            if (selectedStudentEmails.size === 0) return;
+            statusText.textContent = '';
+            const recipientEmailsArray = Array.from(selectedStudentEmails);
+            document.getElementById('receiverEmail').value = recipientEmailsArray.join(', ');
+            document.getElementById('subject').value = '';
+            document.getElementById('message').value = '';
+            notifyModal.classList.add('open');
+            document.getElementById('senderEmail').focus();
+        });
+
+        /* ---------- Open / Close Portfolio Modal ---------- */
+        function openPortfolio(student) {
+            document.getElementById('portfolioPic').src = student.photo;
+            document.getElementById('portfolioPic').alt = student.name + ' Profile Picture';
+            document.getElementById('portfolioName').textContent = student.name;
+            document.getElementById('portfolioProgBranch').textContent = 'Programme: ' + student.programmeLabel;
+            document.getElementById('portfolioSemester').textContent = 'Current Semester: Semester ' + student.currentSemester;
+
+            const githubLink = document.getElementById('portfolioGithub');
+            const linkedinLink = document.getElementById('portfolioLinkedin');
+            githubLink.href = student.github || '#';
+            linkedinLink.href = student.linkedin || '#';
+
+            const languagesWrap = document.getElementById('portfolioLanguages');
+            languagesWrap.innerHTML = '';
+            if (!student.languages || student.languages.length === 0) {
+                languagesWrap.textContent = 'No languages or skills listed.';
+            } else {
+                student.languages.forEach(function (lang) {
+                    const chip = document.createElement('span');
+                    chip.className = 'skill-chip';
+                    chip.textContent = lang;
+                    languagesWrap.appendChild(chip);
+                });
+            }
+
+            const projectsGrid = document.getElementById('portfolioProjects');
+            projectsGrid.innerHTML = '';
+            if (!student.projects || student.projects.length === 0) {
+                projectsGrid.textContent = 'No projects recorded yet.';
+            } else {
+                student.projects.forEach(function (proj) {
+                    const card = document.createElement('div');
+                    card.className = 'project-card';
+
+                    const infoDiv = document.createElement('div');
+                    const title = document.createElement('h4');
+                    title.textContent = proj.title;
+
+                    const desc = document.createElement('p');
+                    desc.textContent = proj.description;
+
+                    infoDiv.append(title, desc);
+                    card.appendChild(infoDiv);
+
+                    if (proj.demoUrl) {
+                        const demoLink = document.createElement('a');
+                        demoLink.className = 'demo-btn';
+                        demoLink.href = proj.demoUrl;
+                        demoLink.target = '_blank';
+                        demoLink.rel = 'noopener noreferrer';
+                        demoLink.textContent = 'Live Demo \u2197';
+                        card.appendChild(demoLink);
+                    }
+
+                    projectsGrid.appendChild(card);
+                });
+            }
+
+            const workshopsList = document.getElementById('portfolioWorkshops');
+            workshopsList.innerHTML = '';
+            if (!student.workshops || student.workshops.length === 0) {
+                workshopsList.innerHTML = '<li>No workshops recorded.</li>';
+            } else {
+                student.workshops.forEach(function (ws) {
+                    const li = document.createElement('li');
+                    li.textContent = ws;
+                    workshopsList.appendChild(li);
+                });
+            }
+
+            const hackathonsList = document.getElementById('portfolioHackathons');
+            hackathonsList.innerHTML = '';
+            if (!student.hackathons || student.hackathons.length === 0) {
+                hackathonsList.innerHTML = '<li>No hackathons recorded.</li>';
+            } else {
+                student.hackathons.forEach(function (hack) {
+                    const li = document.createElement('li');
+                    li.textContent = hack.name;
+                    if (hack.standing) {
+                        const badge = document.createElement('span');
+                        badge.className = 'standing-badge';
+                        badge.textContent = hack.standing;
+                        li.appendChild(badge);
+                    }
+                    hackathonsList.appendChild(li);
+                });
+            }
+
+            const gradesContainer = document.getElementById('portfolioGrades');
+            gradesContainer.innerHTML = '';
+            if (!student.semesterSubjects || student.semesterSubjects.length === 0) {
+                gradesContainer.textContent = 'No completed semesters yet (1st Semester ongoing).';
+            } else {
+                student.semesterSubjects.forEach(function (semObj) {
+                    const card = document.createElement('div');
+                    card.className = 'sem-card';
+
+                    const title = document.createElement('h4');
+                    const semLabel = document.createElement('span');
+                    semLabel.textContent = 'Semester ' + semObj.semester;
+                    title.appendChild(semLabel);
+
+                    if (semObj.sgpa !== undefined) {
+                        const sgpaBadge = document.createElement('span');
+                        sgpaBadge.className = 'sgpa-pill';
+                        sgpaBadge.textContent = 'SGPA: ' + semObj.sgpa.toFixed(1);
+                        title.appendChild(sgpaBadge);
+                    }
+
+                    card.appendChild(title);
+
+                    semObj.subjects.forEach(function (sub) {
+                        const subRow = document.createElement('div');
+                        subRow.className = 'subject-row';
+
+                        const isStrong = sub.grade >= 9.0;
+                        if (isStrong) {
+                            subRow.classList.add('strong-subject');
+                        }
+
+                        const subNameSpan = document.createElement('span');
+                        subNameSpan.textContent = sub.name;
+                        if (isStrong) {
+                            const strongTag = document.createElement('span');
+                            strongTag.className = 'strong-tag';
+                            strongTag.textContent = 'Strong';
+                            subNameSpan.appendChild(strongTag);
+                        }
+
+                        const subGradeSpan = document.createElement('span');
+                        subGradeSpan.textContent = sub.grade.toFixed(1) + ' / 10';
+
+                        subRow.append(subNameSpan, subGradeSpan);
+                        card.appendChild(subRow);
+                    });
+
+                    gradesContainer.appendChild(card);
+                });
+            }
+
+            portfolioModal.classList.add('open');
+        }
+
+        function closePortfolio() {
+            portfolioModal.classList.remove('open');
+        }
+
+        document.getElementById('closePortfolioModal').addEventListener('click', closePortfolio);
+        portfolioModal.addEventListener('click', function (e) { if (e.target === portfolioModal) closePortfolio(); });
+
+        /* ---------- Open / close the notification form ---------- */
+        function openNotification(student) {
+            statusText.textContent = '';
+            document.getElementById('receiverEmail').value = student.email;
+            document.getElementById('subject').value = '';
+            document.getElementById('message').value = '';
+            notifyModal.classList.add('open');
+            const senderField = document.getElementById('senderEmail');
+            (senderField.value ? document.getElementById('subject') : senderField).focus();
+        }
+
+        function closeNotification() {
+            notifyModal.classList.remove('open');
+        }
+
+        document.getElementById('closeModal').addEventListener('click', closeNotification);
+        notifyModal.addEventListener('click', function (e) { if (e.target === notifyModal) closeNotification(); });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeNotification();
+                closePortfolio();
+            }
+        });
+
+        /* ---------- Email sending logic ---------- */
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            statusText.style.color = 'black';
+            statusText.textContent = 'Sending...';
+
+            const formData = {
+                senderEmail: document.getElementById('senderEmail').value,
+                receiverEmail: document.getElementById('receiverEmail').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/send-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    statusText.style.color = 'green';
+                    statusText.textContent = 'Email(s) sent successfully!';
+                    form.reset();
+                    setTimeout(closeNotification, 1500);
+                } else {
+                    statusText.style.color = 'red';
+                    statusText.textContent = 'Error: ' + result.error;
+                }
+            } catch (error) {
+                statusText.style.color = 'red';
+                statusText.textContent = 'Failed to connect to the server.';
+            }
+        });
+    </script>
+</body>
+</html>
